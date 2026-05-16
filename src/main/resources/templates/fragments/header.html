@@ -1,0 +1,146 @@
+<!-- Header Fragment -->
+<header th:fragment="header" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5aa8 100%);
+    border-bottom: 3px solid #0d6efd;
+    z-index: 950;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+">
+    <nav class="navbar navbar-expand-lg navbar-dark h-100" style="padding: 0;">
+        <div class="container-fluid h-100" style="display: flex; align-items: center;">
+            <!-- Hospital Logo and Name -->
+            <a class="navbar-brand" href="/" style="
+                color: white;
+                font-weight: 700;
+                font-size: 1.3rem;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            ">
+                <i class="bi bi-hospital" style="font-size: 1.8rem;"></i>
+                <span>Hospital Management System</span>
+            </a>
+
+            <!-- Spacer -->
+            <div class="ms-auto" style="display: flex; align-items: center; gap: 1.5rem;">
+                <!-- Notifications -->
+                <div class="dropdown" style="position: relative;">
+                    <button class="btn btn-link" style="
+                        color: white;
+                        text-decoration: none;
+                        font-size: 1.2rem;
+                        border: none;
+                        padding: 0;
+                        position: relative;
+                    " data-bs-toggle="dropdown">
+                        <i class="bi bi-bell-fill"></i>
+                        <span style="
+                            position: absolute;
+                            top: -5px;
+                            right: -8px;
+                            background: #dc3545;
+                            color: white;
+                            border-radius: 50%;
+                            width: 20px;
+                            height: 20px;
+                            font-size: 0.75rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: 700;
+                        ">3</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" style="min-width: 300px;">
+                        <li><h6 class="dropdown-header">Notifications</h6></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item small" href="#">Low medicine stock alert</a></li>
+                        <li><a class="dropdown-item small" href="#">New appointment scheduled</a></li>
+                        <li><a class="dropdown-item small" href="#">Patient admitted</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item small text-center" href="#">View all notifications</a></li>
+                    </ul>
+                </div>
+
+                <!-- Messages -->
+                <div class="dropdown" style="position: relative;">
+                    <button class="btn btn-link" style="
+                        color: white;
+                        text-decoration: none;
+                        font-size: 1.2rem;
+                        border: none;
+                        padding: 0;
+                        position: relative;
+                    " data-bs-toggle="dropdown">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span style="
+                            position: absolute;
+                            top: -5px;
+                            right: -8px;
+                            background: #0d6efd;
+                            color: white;
+                            border-radius: 50%;
+                            width: 20px;
+                            height: 20px;
+                            font-size: 0.75rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: 700;
+                        ">2</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" style="min-width: 300px;">
+                        <li><h6 class="dropdown-header">Messages</h6></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item small" href="#">Dr. Smith: Patient follow-up needed</a></li>
+                        <li><a class="dropdown-item small" href="#">HR: New shift schedule updated</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item small text-center" href="#">View all messages</a></li>
+                    </ul>
+                </div>
+
+                <!-- Search -->
+                <div class="input-group" style="width: 200px;">
+                    <input type="text" class="form-control" placeholder="Quick search..." style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        color: white;
+                    ">
+                    <span class="input-group-text" style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        color: rgba(255, 255, 255, 0.7);
+                    ">
+                        <i class="bi bi-search"></i>
+                    </span>
+                </div>
+
+                <!-- User Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-link" style="
+                        color: white;
+                        text-decoration: none;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        border: none;
+                        padding: 0;
+                    " data-bs-toggle="dropdown">
+                        <img src="https://via.placeholder.com/35" class="rounded-circle" alt="User" style="width: 35px; height: 35px;">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile"><i class="bi bi-person-circle"></i> My Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="/help"><i class="bi bi-question-circle"></i> Help & Support</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
