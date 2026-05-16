@@ -23,9 +23,11 @@ import static HospitalManagementSystem.SpringProject.entity.Status.Investigation
 @RequiredArgsConstructor
 @Service
 public class InvestigationServiceImplementation implements InvestigationService {
+
     private final InvestigationRepository investigationRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+
     @Override
     public Investigation requestInvestigation(Investigation investigation) {
         Patient patient = patientRepository.findById(investigation.getPatient().getId())
@@ -33,11 +35,6 @@ public class InvestigationServiceImplementation implements InvestigationService 
 
         Doctor doctor = doctorRepository.findById(investigation.getDoctor().getId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
-
-        investigation.setPatient(patient);
-        investigation.setDoctor(doctor);
-        investigation.setRequestedDate(LocalDateTime.now());
-        investigation.setStatus(PENDING);
 
         return investigationRepository.save(investigation);
     }
@@ -63,6 +60,7 @@ public class InvestigationServiceImplementation implements InvestigationService 
     }
 
     @Override
+    @Transactional
     public Investigation updateInvestigation(Long id, Investigation investigationDetails) {
         Investigation existing = investigationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Investigation not found"));
@@ -86,6 +84,7 @@ public class InvestigationServiceImplementation implements InvestigationService 
     }
 
     @Override
+    @Transactional
     public Investigation updateStatus(Long id, InvestigationStatus status) {
         Investigation investigation = investigationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Investigation not found"));
@@ -95,6 +94,7 @@ public class InvestigationServiceImplementation implements InvestigationService 
     }
 
     @Override
+    @Transactional
     public void deleteInvestigation(Long id) {
         investigationRepository.deleteById(id);
     }

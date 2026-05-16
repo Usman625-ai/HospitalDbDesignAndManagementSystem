@@ -1,6 +1,7 @@
 package HospitalManagementSystem.SpringProject.service;
 
 import HospitalManagementSystem.SpringProject.entity.Medicine;
+import HospitalManagementSystem.SpringProject.record.MedicineRecord;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +15,9 @@ public interface MedicineService {
 
     Optional<Medicine> getMedicineByName(String name);
 
-    List<Medicine> getAllMedicines();
+    List<MedicineRecord> getAllMedicines();
 
-    List<Medicine> getLowStockMedicines();
+    List<MedicineRecord> getLowStockMedicines();
 
     List<Medicine> searchMedicines(String keyword);
 

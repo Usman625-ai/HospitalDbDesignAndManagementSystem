@@ -4,11 +4,14 @@ import HospitalManagementSystem.SpringProject.entity.Bill;
 import HospitalManagementSystem.SpringProject.entity.Patient;
 import HospitalManagementSystem.SpringProject.entity.Status.PaymentMethod;
 import HospitalManagementSystem.SpringProject.entity.Status.PaymentStatus;
+import HospitalManagementSystem.SpringProject.record.BillRecord;
 import HospitalManagementSystem.SpringProject.repository.BillRepository;
 import HospitalManagementSystem.SpringProject.repository.PatientRepository;
 import HospitalManagementSystem.SpringProject.service.BillService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,11 +31,11 @@ public class BillServiceImplementation implements BillService {
     private final PatientRepository patientRepository;
 
     @Override
+    @Transactional
     public Bill generateBill(Bill bill) {
         // Validate patient exists
         Patient patient = patientRepository.findById(bill.getPatient().getId())
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
-
         // Calculate total if not already set
         if (bill.getTotalAmount() == null || bill.getTotalAmount() == 0) {
             double total = bill.getConsultationFee() +
@@ -40,17 +43,11 @@ public class BillServiceImplementation implements BillService {
                     bill.getLabCharges() +
                     bill.getRoomCharges() +
                     bill.getOtherCharges();
-
             double tax = total * (bill.getTaxPercentage() / 100);
             total = total + tax - (bill.getDiscountAmount() != null ? bill.getDiscountAmount() : 0);
 
             bill.setTotalAmount(total);
         }
-
-        bill.setPatient(patient);
-        bill.setBillDate(LocalDateTime.now());
-        bill.setDueDate(bill.getBillDate().plusDays(15));
-        bill.setPaymentStatus(PENDING);
 
         return billRepository.save(bill);
     }
@@ -61,33 +58,33 @@ public class BillServiceImplementation implements BillService {
     }
 
     @Override
-    public List<Bill> getAllBills() {
-        return billRepository.findAll();
+    public List<BillRecord> getAllBills() {
+        PageRequest page = PageRequest.of(0, 100);
+        return billRepository.findAllBillsSummary(page);
     }
 
     @Override
-    public List<Bill> getBillsByPatient(Long patientId) {
-        return billRepository.findByPatientId(patientId);
+    public List<BillRecord> getBillsByPatient(Long patientId) {
+        return billRepository.findBillsByPatientId(patientId);
     }
 
     @Override
-    public List<Bill> getBillsByPaymentStatus(PaymentStatus paymentStatus) {
-        return billRepository.findByPaymentStatus(paymentStatus);
+    public List<BillRecord> getBillsByPaymentStatus(PaymentStatus paymentStatus) {
+        return billRepository.findBillsByPaymentStatus(paymentStatus);
     }
 
     @Override
-    public List<Bill> getTodayBills() {
-        LocalDateTime start = LocalDateTime.now().with(LocalTime.MIN);
-        LocalDateTime end = LocalDateTime.now().with(LocalTime.MAX);
-        return billRepository.findByBillDateBetween(start, end);
+    public List<BillRecord> getTodayBills() {
+        return billRepository.findTodayBills();
     }
 
     @Override
-    public List<Bill> getOverdueBills() {
+    public List<BillRecord> getOverdueBills() {
         return billRepository.findOverdueBills();
     }
 
     @Override
+    @Transactional
     public Bill updateBill(Long id, Bill billDetails) {
         Bill existingBill = billRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bill not found with id: " + id));
@@ -116,6 +113,7 @@ public class BillServiceImplementation implements BillService {
     }
 
     @Override
+    @Transactional
     public Bill processPayment(Long id, PaymentMethod paymentMethod) {
         Bill bill = billRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bill not found with id: " + id));
@@ -137,6 +135,7 @@ public class BillServiceImplementation implements BillService {
     }
 
     @Override
+    @Transactional
     public void deleteBill(Long id) {
         if (!billRepository.existsById(id)) {
             throw new RuntimeException("Bill not found with id: " + id);
@@ -163,13 +162,5 @@ public class BillServiceImplementation implements BillService {
     @Override
     public long getPendingPaymentsCount() {
         return billRepository.countPendingPayments();
-    }
-
-    @Override
-    public double getPatientOutstandingBalance(Long patientId) {
-        List<Bill> pendingBills = billRepository.findByPatientIdAndPaymentStatus(patientId, PENDING);
-        return pendingBills.stream()
-                .mapToDouble(Bill::getTotalAmount)
-                .sum();
     }
 }

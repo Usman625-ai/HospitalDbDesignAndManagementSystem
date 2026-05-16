@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 @Setter
 @Table(name = "medical_record", indexes = {
         @Index(name = "idx_patient_id", columnList = "patient_id"),
-        @Index(name = "idx_record_type", columnList = "recordType")
+        @Index(name = "idx_doctor_id", columnList = "doctor_id"),
+        @Index(name = "idx_appointment_id", columnList = "appointment_id"),
+        @Index(name = "idx_record_no", columnList = "recordNumber"),
+        @Index(name = "idx_recordDate", columnList = "recordDate")
 })
 public class MedicalRecord {
 
@@ -20,7 +23,11 @@ public class MedicalRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(
+            nullable = false,
+            unique = true,
+            insertable = false,
+            updatable = false)
     private String recordNumber;
 
     // Relationships

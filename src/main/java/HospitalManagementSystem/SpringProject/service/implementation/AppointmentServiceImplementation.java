@@ -3,12 +3,16 @@ package HospitalManagementSystem.SpringProject.service.implementation;
 import HospitalManagementSystem.SpringProject.entity.Appointment;
 import HospitalManagementSystem.SpringProject.entity.Doctor;
 import HospitalManagementSystem.SpringProject.entity.Patient;
+import HospitalManagementSystem.SpringProject.entity.Status.AppointmentStatus;
+import HospitalManagementSystem.SpringProject.record.AppointmentRecord;
 import HospitalManagementSystem.SpringProject.repository.AppointmentRepository;
 import HospitalManagementSystem.SpringProject.repository.DoctorRepository;
 import HospitalManagementSystem.SpringProject.repository.PatientRepository;
 import HospitalManagementSystem.SpringProject.service.AppointmentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -40,11 +44,6 @@ public class AppointmentServiceImplementation implements AppointmentService {
         if (isDoctorAvailable(doctor.getId(), appointment.getAppointmentDateTime())) {
             throw new RuntimeException("Doctor is not available at this time");
         }
-
-
-        appointment.setPatient(patient);
-        appointment.setDoctor(doctor);
-        appointment.setStatus(SCHEDULED);
         appointment.setCreatedAt(LocalDateTime.now());
 
         return appointmentRepository.save(appointment);
@@ -52,27 +51,36 @@ public class AppointmentServiceImplementation implements AppointmentService {
 
     @Override
     public Optional<Appointment> getAppointmentById(Long id) {
-        return appointmentRepository.findById(id);
+        return appointmentRepository.findByIdWithDetails(id);
     }
 
     @Override
-    public List<Appointment> getAllAppointments() {
-        return appointmentRepository.findAll();
+    public Page<Appointment> getAllAppointments() {
+        PageRequest page = PageRequest.of(0, 100);
+        return appointmentRepository.findAll(page);
     }
 
     @Override
     public List<Appointment> getAppointmentsByPatient(Long patientId) {
-        return appointmentRepository.findByPatientId(patientId);
+        PageRequest page = PageRequest.of(0, 50); // Limit to 50 per query
+        return appointmentRepository.findByPatientId(patientId,page).getContent();
+    }
+
+//    @Override
+//    public List<AppointmentDTO> getAppointmentsByDoctor(Long doctorId) {
+//        PageRequest page = PageRequest.of(0, 50);
+//        return appointmentRepository.findByDoctorIdWithPatient(doctorId,page).getContent();
+//    }
+
+    // AppointmentService.java
+    public List<AppointmentRecord> getAppointmentsByDoctor(Long doctorId) {
+        return appointmentRepository.findAppointmentRecordsByDoctor(doctorId);
     }
 
     @Override
-    public List<Appointment> getAppointmentsByDoctor(Long doctorId) {
-        return appointmentRepository.findByDoctorId(doctorId);
-    }
-
-    @Override
-    public List<Appointment> getAppointmentsByStatus(String status) {
-        return appointmentRepository.findByStatus(status);
+    public Page<Appointment> getAppointmentsByStatus(AppointmentStatus status) {
+        PageRequest page = PageRequest.of(0, 50);
+        return appointmentRepository.findByStatus(status,page);
     }
 
     @Override
@@ -88,6 +96,7 @@ public class AppointmentServiceImplementation implements AppointmentService {
     }
 
     @Override
+    @Transactional
     public Appointment rescheduleAppointment(Long id, LocalDateTime newDateTime) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));

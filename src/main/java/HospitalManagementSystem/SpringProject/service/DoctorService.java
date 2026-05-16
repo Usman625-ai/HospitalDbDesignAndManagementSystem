@@ -2,6 +2,7 @@ package HospitalManagementSystem.SpringProject.service;
 
 import HospitalManagementSystem.SpringProject.entity.Doctor;
 import HospitalManagementSystem.SpringProject.entity.Status.DoctorStatus;
+import HospitalManagementSystem.SpringProject.record.DoctorRecord;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,11 +17,11 @@ public interface DoctorService {
 
     Optional<Doctor> getDoctorByEmail(String email);
 
-    List<Doctor> getAllDoctors();
+    List<DoctorRecord> getAllDoctors();
 
-    List<Doctor> getDoctorsBySpecialization(String specialization);
+    List<DoctorRecord> getDoctorsBySpecialization(String specialization);
 
-    List<Doctor> getDoctorsByDepartment(String department);
+    List<DoctorRecord> getDoctorsByDepartment(String departmentname);
 
     // Update
     Doctor updateDoctor(Long id, Doctor doctorDetails);

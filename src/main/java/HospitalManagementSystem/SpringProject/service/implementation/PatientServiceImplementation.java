@@ -2,11 +2,14 @@ package HospitalManagementSystem.SpringProject.service.implementation;
 
 import HospitalManagementSystem.SpringProject.entity.Patient;
 import HospitalManagementSystem.SpringProject.entity.Status.PatientStatus;
+import HospitalManagementSystem.SpringProject.record.PatientRecord;
 import HospitalManagementSystem.SpringProject.repository.PatientRepository;
 import HospitalManagementSystem.SpringProject.service.PatientService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,7 +20,6 @@ import static HospitalManagementSystem.SpringProject.entity.Status.PatientStatus
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PatientServiceImplementation implements PatientService {
 
     private final PatientRepository patientRepository;
@@ -27,11 +29,24 @@ public class PatientServiceImplementation implements PatientService {
         if (patientRepository.existsByEmail(patient.getEmail())) {
             throw new RuntimeException("Patient already exists with email: " + patient.getEmail());
         }
+//        int lastNum = 0;
+//        Patient lastPatient = patientRepository.findTopByOrderByIdDesc();
+//        if (lastPatient != null && lastPatient.getPatientId() != null) {
+//            String lastId = lastPatient.getPatientId();
+//            lastNum = Integer.parseInt(lastId.substring(7));
+//            lastNum = lastNum + 1;
+//        }
+//        int year = java.time.Year.now().getValue();
+//        patient.setPatientId(String.format("PAT%d%05d", year, lastNum));
+        Patient saved = patientRepository.save(patient);// ← This reloads the patient_id from database
+        return patientRepository.findById(saved.getId()).orElse(saved);
+    }
 
-        patient.setStatus(ACTIVE);
-        patient.setRegisteredAt(LocalDateTime.now());
-
-        return patientRepository.save(patient);
+    @Transactional
+    @Override
+    public List<Patient> registerPatients(List<Patient> patients) {
+        // Use saveAll for batching
+        return patientRepository.saveAll(patients);
     }
 
     @Override
@@ -45,21 +60,22 @@ public class PatientServiceImplementation implements PatientService {
     }
 
     @Override
-    public List<Patient> getAllPatients() {
-        return patientRepository.findAll();
+    public List<PatientRecord> getAllPatients() {
+        return patientRepository.findAllPatients();
     }
 
     @Override
-    public List<Patient> getPatientsByStatus(PatientStatus status) {
+    public List<PatientRecord> getPatientsByStatus(PatientStatus status) {
         return patientRepository.findByStatus(status);
     }
 
     @Override
-    public List<Patient> searchPatientsByLastName(String name) {
+    public List<PatientRecord> searchPatientsByLastName(String name) {
         return patientRepository.findByLastNameContaining(name);
     }
 
     @Override
+    @Transactional
     public Patient updatePatient(Long id, Patient patientDetails) {
         Patient existingPatient = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
@@ -67,15 +83,14 @@ public class PatientServiceImplementation implements PatientService {
         existingPatient.setFirstName(patientDetails.getFirstName());
         existingPatient.setLastName(patientDetails.getLastName());
         existingPatient.setPhoneNumber(patientDetails.getPhoneNumber());
-        existingPatient.setAddress(patientDetails.getAddress());
-        existingPatient.setEmergencyContact(patientDetails.getEmergencyContact());
-        existingPatient.setMedicalRecords(patientDetails.getMedicalRecords());
+        existingPatient.setEmail(patientDetails.getEmail());
         existingPatient.setUpdatedAt(LocalDateTime.now());
 
         return patientRepository.save(existingPatient);
     }
 
     @Override
+    @Transactional
     public Patient updatePatientStatus(Long id, PatientStatus status) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
@@ -87,6 +102,7 @@ public class PatientServiceImplementation implements PatientService {
     }
 
     @Override
+    @Transactional
     public void deletePatient(Long id) {
         if (!patientRepository.existsById(id)) {
             throw new RuntimeException("Patient not found with id: " + id);
@@ -107,13 +123,8 @@ public class PatientServiceImplementation implements PatientService {
     }
 
     @Override
-    public List<Patient> get10RecentlyRegisteredPatients() {
-//        return patientRepository.findAll().stream()
-//                .limit(10)
-//                .toList(); not efficient,it will load all the data
-
+    public Page<PatientRecord> get10RecentlyRegisteredPatients(Pageable pageable) {
         PageRequest pagereq = PageRequest.of(0,10);
-        return patientRepository.findRecentPatients(pagereq).getContent();
-//        getContent() will return list
+        return patientRepository.findRecentPatients(pagereq);
     }
 }

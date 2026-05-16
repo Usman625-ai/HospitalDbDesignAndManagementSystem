@@ -15,20 +15,19 @@ import java.util.List;
 @Setter
 @Table(name = "prescription", indexes = {
         @Index(name = "idx_patient_id", columnList = "patient_id"),
+        @Index(name = "idx_prescriptionNumber", columnList = "prescriptionNumber"),
         @Index(name = "idx_doctor_id", columnList = "doctor_id"),
         @Index(name = "idx_appointment_id", columnList = "appointment_id"),
         @Index(name = "idx_prescription_date", columnList = "prescription_date")
 })
 public class Prescription {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, insertable = false, updatable = false)
     private String prescriptionNumber;
 
-    // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
@@ -41,9 +40,8 @@ public class Prescription {
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
 
-    // Medications (OneToMany to separate table for better design)
-    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Medicine> medicines = new ArrayList<>();
+    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PrescriptionMedicine> prescriptionMedicines = new ArrayList<>();
 
     // Diagnosis
     @Column(length = 1000)
@@ -55,19 +53,6 @@ public class Prescription {
     // Instructions
     @Column(name = "general_advice", length = 1000)
     private String generalAdvice;
-
-    @Column(name = "follow_up_instructions", length = 500)
-    private String followUpInstructions;
-
-    // Follow up
-    @Column(name = "follow_up_required")
-    private Boolean followUpRequired = false;
-
-    @Column(name = "follow_up_date")
-    private LocalDateTime followUpDate;
-
-    @Column(name = "follow_up_duration_days")
-    private Integer followUpDurationDays;
 
     // Validity
     @Column(name = "valid_until")
@@ -95,4 +80,17 @@ public class Prescription {
 
     @Column(name = "created_by")
     private String createdBy;
+
+    // Helper method to add medicine
+    public void addMedicine(Medicine medicine, String dosage, String frequency, String duration, Integer quantity) {
+        PrescriptionMedicine pm = new PrescriptionMedicine();
+        pm.setPrescription(this);
+        pm.setMedicine(medicine);
+        pm.setDosage(dosage);
+        pm.setFrequency(frequency);
+        pm.setDuration(duration);
+        pm.setQuantity(quantity);
+        pm.setIsSubstituteAllowed(true);
+        prescriptionMedicines.add(pm);
+    }
 }

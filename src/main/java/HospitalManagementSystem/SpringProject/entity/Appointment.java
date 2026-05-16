@@ -11,6 +11,13 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Table(indexes = {
+        @Index(name = "idx_doctor_id", columnList = "doctor_id"),
+        @Index(name = "idx_patient_id", columnList = "patient_id"),
+        @Index(name = "idx_appointment_status", columnList = "status"),
+        @Index(name = "idx_appointmentDateTime", columnList = "appointmentDateTime"),
+        @Index(name = "idx_doctor_status_date", columnList = "doctor_id,status,appointmentDateTime")
+})
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +48,10 @@ public class Appointment {
     @Column(nullable = false)
     private AppointmentStatus status;
 
+    @Basic(fetch = FetchType.LAZY)
     private String symptoms;
+
+    @Basic(fetch = FetchType.LAZY)
     private String notes;
 
     // Audit

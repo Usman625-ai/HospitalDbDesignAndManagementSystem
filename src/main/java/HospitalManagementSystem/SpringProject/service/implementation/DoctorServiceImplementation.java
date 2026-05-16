@@ -2,10 +2,14 @@ package HospitalManagementSystem.SpringProject.service.implementation;
 
 import HospitalManagementSystem.SpringProject.entity.Doctor;
 import HospitalManagementSystem.SpringProject.entity.Status.DoctorStatus;
+import HospitalManagementSystem.SpringProject.record.DoctorRecord;
 import HospitalManagementSystem.SpringProject.repository.DoctorRepository;
 import HospitalManagementSystem.SpringProject.service.DoctorService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,13 +28,17 @@ public class DoctorServiceImplementation implements DoctorService {
     @Override
     public Doctor registerDoctor(Doctor doctor) {
         if (doctorRepository.existsByEmail(doctor.getEmail())) {
-            throw new RuntimeException("Doctor already exists with email: " + doctor.getEmail());
+            throw new RuntimeException("Doctor already exists with ID: " + doctor.getEmail());
         }
-
-        doctor.setStatus(AVAILABLE);
+//        int lastNum = 0;
+//        String maxDoctorid = doctorRepository.findMaxDoctorId();
+//        if (maxDoctorid != null) {
+//            lastNum = Integer.parseInt(maxDoctorid.substring(7));
+//            lastNum = lastNum + 1;
+//        }
         doctor.setJoiningDate(LocalDateTime.now());
-
         return doctorRepository.save(doctor);
+//        entityManager.refresh(saved);  // ← This reloads the patient_id from database
     }
 
     @Override
@@ -44,21 +52,23 @@ public class DoctorServiceImplementation implements DoctorService {
     }
 
     @Override
-    public List<Doctor> getAllDoctors() {
-        return doctorRepository.findAll();
+    public List<DoctorRecord> getAllDoctors() {
+        PageRequest page = PageRequest.of(0, 10);
+        return doctorRepository.findAllDoctorDTOs(page);
     }
 
     @Override
-    public List<Doctor> getDoctorsBySpecialization(String specialization) {
-        return doctorRepository.findBySpecialization(specialization);
+    public List<DoctorRecord> getDoctorsBySpecialization(String specialization) {
+        return doctorRepository.findDoctorBySpecialization(specialization);
     }
 
     @Override
-    public List<Doctor> getDoctorsByDepartment(String department) {
-        return doctorRepository.findByDepartment(department);
+    public List<DoctorRecord> getDoctorsByDepartment(String department) {
+        return doctorRepository.findDoctorByDepartment(department);
     }
 
     @Override
+    @Transactional
     public Doctor updateDoctor(Long id, Doctor doctorDetails) {
         Doctor existingDoctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
@@ -76,6 +86,7 @@ public class DoctorServiceImplementation implements DoctorService {
     }
 
     @Override
+    @Transactional
     public Doctor updateDoctorStatus(Long id, DoctorStatus status) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));

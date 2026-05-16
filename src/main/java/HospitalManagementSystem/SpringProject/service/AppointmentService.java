@@ -1,6 +1,9 @@
 package HospitalManagementSystem.SpringProject.service;
 
 import HospitalManagementSystem.SpringProject.entity.Appointment;
+import HospitalManagementSystem.SpringProject.entity.Status.AppointmentStatus;
+import HospitalManagementSystem.SpringProject.record.AppointmentRecord;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,13 +17,13 @@ public interface AppointmentService {
     // Read
     Optional<Appointment> getAppointmentById(Long id);
 
-    List<Appointment> getAllAppointments();
+    List<AppointmentRecord> getAppointmentsByDoctor(Long doctorId);
+
+    Page<Appointment> getAllAppointments();
 
     List<Appointment> getAppointmentsByPatient(Long patientId);
 
-    List<Appointment> getAppointmentsByDoctor(Long doctorId);
-
-    List<Appointment> getAppointmentsByStatus(String status);
+    Page<Appointment> getAppointmentsByStatus(AppointmentStatus status);
 
     List<Appointment> getTodayAppointments();
 

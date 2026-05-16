@@ -25,8 +25,6 @@ public class DepartmentServiceImplementation implements DepartmentService {
         if (departmentRepository.existsByName(department.getName())) {
             throw new RuntimeException("Department already exists with name: " + department.getName());
         }
-
-        department.setStatus(ACTIVE);
         return departmentRepository.save(department);
     }
 
@@ -51,6 +49,7 @@ public class DepartmentServiceImplementation implements DepartmentService {
     }
 
     @Override
+    @Transactional
     public Department updateDepartment(Long id, Department departmentDetails) {
         Department existingDepartment = departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
@@ -65,6 +64,7 @@ public class DepartmentServiceImplementation implements DepartmentService {
     }
 
     @Override
+    @Transactional
     public Department updateDepartmentStatus(Long id, DepartmentStatus status) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
@@ -74,6 +74,7 @@ public class DepartmentServiceImplementation implements DepartmentService {
     }
 
     @Override
+    @Transactional
     public Department assignHeadOfDepartment(Long id, Doctor headName) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
@@ -83,6 +84,7 @@ public class DepartmentServiceImplementation implements DepartmentService {
     }
 
     @Override
+    @Transactional
     public void deleteDepartment(Long id) {
         if (!departmentRepository.existsById(id)) {
             throw new RuntimeException("Department not found with id: " + id);

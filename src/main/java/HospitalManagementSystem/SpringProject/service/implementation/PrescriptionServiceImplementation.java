@@ -1,16 +1,15 @@
 package HospitalManagementSystem.SpringProject.service.implementation;
 
 import HospitalManagementSystem.SpringProject.entity.*;
-import HospitalManagementSystem.SpringProject.repository.AppointmentRepository;
-import HospitalManagementSystem.SpringProject.repository.DoctorRepository;
-import HospitalManagementSystem.SpringProject.repository.PatientRepository;
-import HospitalManagementSystem.SpringProject.repository.PrescriptionRepository;
+import HospitalManagementSystem.SpringProject.record.PrescriptionRecord;
+import HospitalManagementSystem.SpringProject.repository.*;
 import HospitalManagementSystem.SpringProject.service.PrescriptionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,22 +20,22 @@ import static HospitalManagementSystem.SpringProject.entity.Status.PrescriptionS
 @Service
 @RequiredArgsConstructor
 public class PrescriptionServiceImplementation implements PrescriptionService {
+
     private final PrescriptionRepository prescriptionRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
+    private final MedicineRepository medicineRepository;
+    private final PrescriptionMedicineRepository prescriptionMedicineRepository;
 
     @Override
     public Prescription createPrescription(Prescription prescription) {
-        // Validate patient exists
         Patient patient = patientRepository.findById(prescription.getPatient().getId())
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
 
-        // Validate doctor exists
         Doctor doctor = doctorRepository.findById(prescription.getDoctor().getId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        // Validate appointment if provided
         if (prescription.getAppointment() != null && prescription.getAppointment().getId() != null) {
             Appointment appointment = appointmentRepository.findById(prescription.getAppointment().getId())
                     .orElseThrow(() -> new RuntimeException("Appointment not found"));
@@ -45,8 +44,8 @@ public class PrescriptionServiceImplementation implements PrescriptionService {
 
         prescription.setPatient(patient);
         prescription.setDoctor(doctor);
-        prescription.setPrescriptionDate(LocalDateTime.now());
         prescription.setStatus(ACTIVE);
+        prescription.setPrescriptionDate(LocalDateTime.now());
 
         return prescriptionRepository.save(prescription);
     }
@@ -57,17 +56,17 @@ public class PrescriptionServiceImplementation implements PrescriptionService {
     }
 
     @Override
-    public List<Prescription> getAllPrescriptions() {
-        return prescriptionRepository.findAll();
+    public List<PrescriptionRecord> getAllPrescriptions() {
+        return prescriptionRepository.findAllPrescriptions();
     }
 
     @Override
-    public List<Prescription> getPrescriptionsByPatient(Long patientId) {
+    public List<PrescriptionRecord> getPrescriptionsByPatient(Long patientId) {
         return prescriptionRepository.findByPatientId(patientId);
     }
 
     @Override
-    public List<Prescription> getPrescriptionsByDoctor(Long doctorId) {
+    public List<PrescriptionRecord> getPrescriptionsByDoctor(Long doctorId) {
         return prescriptionRepository.findByDoctorId(doctorId);
     }
 
@@ -77,37 +76,60 @@ public class PrescriptionServiceImplementation implements PrescriptionService {
     }
 
     @Override
+    @Transactional
     public Prescription updatePrescription(Long id, Prescription prescriptionDetails) {
-        Prescription existingPrescription = prescriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prescription not found with id: " + id));
+        Prescription existing = prescriptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Prescription not found"));
 
-        existingPrescription.setDiagnosis(prescriptionDetails.getDiagnosis());
-        existingPrescription.setMedicines(prescriptionDetails.getMedicines());
-        existingPrescription.setFollowUpInstructions(prescriptionDetails.getFollowUpInstructions());
-        existingPrescription.setFollowUpDate(prescriptionDetails.getFollowUpDate());
+        existing.setDiagnosis(prescriptionDetails.getDiagnosis());
+        existing.setInvestigations(prescriptionDetails.getInvestigations());
+        existing.setGeneralAdvice(prescriptionDetails.getGeneralAdvice());
+        existing.setValidUntil(prescriptionDetails.getValidUntil());
 
-        return prescriptionRepository.save(existingPrescription);
+        return prescriptionRepository.save(existing);
     }
 
     @Override
-    public Prescription addMedicineToPrescription(Long id, Medicine medicine) {
+    @Transactional
+    public Prescription addMedicineToPrescription(Long id, Long medicineId, String dosage, String frequency, String duration, Integer quantity) {
         Prescription prescription = prescriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prescription not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Prescription not found"));
 
-        List<Medicine> currentMedicines = prescription.getMedicines();
-        currentMedicines.add(medicine);
+        Medicine medicine = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new RuntimeException("Medicine not found"));
+
+        PrescriptionMedicine pm = new PrescriptionMedicine();
+        pm.setPrescription(prescription);
+        pm.setMedicine(medicine);
+        pm.setDosage(dosage);
+        pm.setFrequency(frequency);
+        pm.setDuration(duration);
+        pm.setQuantity(quantity);
+        pm.setIsSubstituteAllowed(true);
+        pm.setPrescribedAt(LocalDateTime.now());
+
+        prescriptionMedicineRepository.save(pm);
+
+        // Add to prescription's list
+        if (prescription.getPrescriptionMedicines() == null) {
+            prescription.setPrescriptionMedicines(new ArrayList<>());
+        }
+        prescription.getPrescriptionMedicines().add(pm);
+
         return prescriptionRepository.save(prescription);
     }
 
     @Override
+    @Transactional
     public Prescription deactivatePrescription(Long id) {
         Prescription prescription = prescriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prescription not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Prescription not found"));
         prescription.setStatus(DISPENSED);
         return prescriptionRepository.save(prescription);
     }
 
     @Override
+    @Transactional
     public void deletePrescription(Long id) {
         if (!prescriptionRepository.existsById(id)) {
             throw new RuntimeException("Prescription not found with id: " + id);
@@ -118,11 +140,8 @@ public class PrescriptionServiceImplementation implements PrescriptionService {
     @Override
     public boolean isPrescriptionActive(Long id) {
         Prescription prescription = prescriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prescription not found with id: " + id));
-        if(ACTIVE.equals(prescription.getStatus())){
-            return true;
-        }
-        return false;
+                .orElseThrow(() -> new RuntimeException("Prescription not found"));
+        return ACTIVE.equals(prescription.getStatus());
     }
 
     @Override

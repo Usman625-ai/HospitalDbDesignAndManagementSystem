@@ -12,22 +12,27 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "bill")
+@Table(name = "bill",
+        indexes = {
+                @Index(name = "idx_doctor_id", columnList = "doctor_id"),
+                @Index(name = "idx_patient_id", columnList = "patient_id"),
+                @Index(name = "idx_appointment_id", columnList = "appointment_id"),
+                @Index(name = "idx_appointment_Bill_date", columnList = "billDate")
+        })
 public class Bill {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id", nullable = false)
     private Appointment appointment;
 

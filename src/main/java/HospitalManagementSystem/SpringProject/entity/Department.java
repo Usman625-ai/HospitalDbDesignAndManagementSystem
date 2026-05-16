@@ -14,7 +14,10 @@ import java.util.List;
 @Setter
 @Table(name = "department", indexes = {
         @Index(name = "idx_dept_name", columnList = "name"),
-        @Index(name = "idx_hod_id", columnList = "hod_id")
+        @Index(name = "idx_hod_id", columnList = "hod_id"),
+        @Index(name = "idx_department_openning_close_time", columnList = "openingTime,ClosingTime"),
+        @Index(name = "idx_department_createdAt", columnList = "createdAt"),
+        @Index(name = "idx_department_annual_budget", columnList = "annualBudget")
 })
 public class Department {
 
@@ -37,7 +40,7 @@ public class Department {
     @JoinColumn(name = "hod_id")
     private Doctor headOfDepartment;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<Doctor> doctors = new ArrayList<>();
 
     // Statistics

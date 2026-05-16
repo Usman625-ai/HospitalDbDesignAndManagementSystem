@@ -18,9 +18,13 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "doctor", indexes = {
+        @Index(name = "idx_doctor_name", columnList = "name"),
         @Index(name = "idx_doctor_email", columnList = "email"),
         @Index(name = "idx_specialization", columnList = "specialization"),
-        @Index(name = "idx_department_id", columnList = "department_id")
+        @Index(name = "idx_department_id", columnList = "department_id"),
+        @Index(name = "idx_doctor_registration_no", columnList = "registrationNumber"),
+        @Index(name = "idx_doctor_joining_Date", columnList = "joiningDate"),
+        @Index(name = "idx_doctor_id", columnList = "id")
 })
 public class Doctor {
 
@@ -47,7 +51,11 @@ public class Doctor {
     private Gender gender;
 
     // Professional information
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false,
+            unique = true,
+            insertable = false,
+            updatable = false
+    )
     private String registrationNumber;  // Medical council registration
 
     @Column(length = 100)
@@ -73,16 +81,18 @@ public class Doctor {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL)
+
+
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<Appointment> appointments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<Prescription> prescriptions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "doctor")
+    @OneToMany(mappedBy = "doctor",fetch = FetchType.LAZY)
     private List<MedicalRecord> medicalRecords = new ArrayList<>();
 
-    @OneToMany(mappedBy = "doctor")
+    @OneToMany(mappedBy = "doctor",fetch = FetchType.LAZY)
     private List<Bill> bills = new ArrayList<>();
 
     // Schedule

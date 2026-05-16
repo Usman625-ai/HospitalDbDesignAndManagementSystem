@@ -3,6 +3,8 @@ package HospitalManagementSystem.SpringProject.service;
 import HospitalManagementSystem.SpringProject.entity.Bill;
 import HospitalManagementSystem.SpringProject.entity.Status.PaymentMethod;
 import HospitalManagementSystem.SpringProject.entity.Status.PaymentStatus;
+import HospitalManagementSystem.SpringProject.record.BillRecord;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,15 +16,14 @@ public interface BillService {
     // Read
     Optional<Bill> getBillById(Long id);
 
-    List<Bill> getAllBills();
+    // Read operations - Use DTO
+    List<BillRecord> getBillsByPatient(Long patientId);
+    List<BillRecord> getBillsByPaymentStatus(PaymentStatus paymentStatus);
+    List<BillRecord> getTodayBills();
+    List<BillRecord> getOverdueBills();
 
-    List<Bill> getBillsByPatient(Long patientId);
-
-    List<Bill> getBillsByPaymentStatus(PaymentStatus paymentStatus);
-
-    List<Bill> getTodayBills();
-
-    List<Bill> getOverdueBills();
+    // Keep these if needed for specific use cases
+    List<BillRecord> getAllBills();
 
     // Update
     Bill updateBill(Long id, Bill billDetails);
@@ -40,6 +41,4 @@ public interface BillService {
     double getTotalRevenueForMonth();
 
     long getPendingPaymentsCount();
-
-    double getPatientOutstandingBalance(Long patientId);
 }

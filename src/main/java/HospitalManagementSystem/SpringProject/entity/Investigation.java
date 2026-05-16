@@ -10,20 +10,25 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "investigation")
 @Getter
 @Setter
+@Table(name = "investigation", indexes = {
+        @Index(name = "idx_patient_id", columnList = "patient_id"),
+        @Index(name = "idx_doctor_id", columnList = "doctor_id"),
+        @Index(name = "idx_investigation_requestedDate", columnList = "requestedDate"),
+        @Index(name = "idx_investigation_resultDate", columnList = "resultDate")
+})
 public class Investigation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 

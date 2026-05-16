@@ -2,7 +2,9 @@ package HospitalManagementSystem.SpringProject.service;
 
 import HospitalManagementSystem.SpringProject.entity.Patient;
 import HospitalManagementSystem.SpringProject.entity.Status.PatientStatus;
+import HospitalManagementSystem.SpringProject.record.PatientRecord;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,16 +13,18 @@ public interface PatientService {
     // Create
     Patient registerPatient(Patient patient);
 
+    List<Patient> registerPatients(List<Patient> patients);
+
     // Read
     Optional<Patient> getPatientById(Long id);
 
     Optional<Patient> getPatientByEmail(String email);
 
-    List<Patient> getAllPatients();
+    List<PatientRecord> getAllPatients();
 
-    List<Patient> getPatientsByStatus(PatientStatus status);
+    List<PatientRecord> getPatientsByStatus(PatientStatus status);
 
-    List<Patient> searchPatientsByLastName(String name);
+    List<PatientRecord> searchPatientsByLastName(String name);
 
     // Update
     Patient updatePatient(Long id, Patient patientDetails);
@@ -35,5 +39,5 @@ public interface PatientService {
 
     long getTotalPatientCount();
 
-    List<Patient> get10RecentlyRegisteredPatients();
+    Page<PatientRecord> get10RecentlyRegisteredPatients(Pageable pageable);
 }

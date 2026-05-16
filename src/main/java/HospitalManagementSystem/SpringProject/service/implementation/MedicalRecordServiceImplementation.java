@@ -25,7 +25,6 @@ public class MedicalRecordServiceImplementation implements MedicalRecordService 
     public MedicalRecord addMedicalRecord(MedicalRecord medicalRecord) {
         Patient patient = patientRepository.findById(medicalRecord.getPatient().getId())
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
-        medicalRecord.setPatient(patient);
         medicalRecord.setRecordDate(LocalDateTime.now());
 
         return medicalRecordRepository.save(medicalRecord);
@@ -52,6 +51,7 @@ public class MedicalRecordServiceImplementation implements MedicalRecordService 
     }
 
     @Override
+    @Transactional
     public MedicalRecord updateMedicalRecord(Long id, MedicalRecord recordDetails) {
         MedicalRecord existing = medicalRecordRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medical record not found"));
@@ -66,6 +66,7 @@ public class MedicalRecordServiceImplementation implements MedicalRecordService 
     }
 
     @Override
+    @Transactional
     public void deleteMedicalRecord(Long id) {
         medicalRecordRepository.deleteById(id);
     }

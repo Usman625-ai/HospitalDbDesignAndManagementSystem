@@ -4,48 +4,44 @@ import HospitalManagementSystem.SpringProject.entity.Status.MedicineCategory;
 import HospitalManagementSystem.SpringProject.entity.Status.MedicineStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-@Table(name = "prescription_medicine")
+@RequiredArgsConstructor
+@Table(name = "medicine", indexes = {
+        @Index(name = "idx_medicine_id", columnList = "id"),
+        @Index(name = "idx_medicineName", columnList = "medicineName"),
+        @Index(name = "idx_Medicine_UnitPrice", columnList = "UnitPrice")
+})
 public class Medicine {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prescription_id", nullable = false)
-    private Prescription prescription;
-
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, unique = true)
     private String medicineName;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private MedicineStatus status = MedicineStatus.ACTIVE;
 
-    private MedicineCategory category; // TABLET, SYRUP, INJECTION, CAPSULE, OINTMENT
+    @Enumerated(EnumType.STRING)
+    private MedicineCategory category;
 
     private int reorderLevel;
 
     @Column(length = 50)
-    private String dosage;  // "500mg"
+    private String dosage;
 
     @Column(name = "Price")
-    private Double UnitPrice; // "500 rupees"
-
-    @Column(length = 50)
-    private String frequency;  // "Twice daily"
-
-    @Column(length = 50)
-    private String duration;  // "5 days"
+    private Double unitPrice;  // Use camelCase: unitPrice
 
     @Column(length = 200)
     private String instructions;
 
-    @Column(name = "quantity")
     private Integer quantity;
 
     @Column(name = "is_substitute_allowed")

@@ -1,6 +1,7 @@
 package HospitalManagementSystem.SpringProject.service.implementation;
 
 import HospitalManagementSystem.SpringProject.entity.Medicine;
+import HospitalManagementSystem.SpringProject.record.MedicineRecord;
 import HospitalManagementSystem.SpringProject.repository.MedicineRepository;
 import HospitalManagementSystem.SpringProject.service.MedicineService;
 import jakarta.transaction.Transactional;
@@ -16,14 +17,19 @@ import static HospitalManagementSystem.SpringProject.entity.Status.MedicineStatu
 @Service
 @Transactional
 public class MedicineServiceImplementation implements MedicineService {
+
     private final MedicineRepository medicineRepository;
+
     @Override
     public Medicine addMedicine(Medicine medicine) {
-        if (medicineRepository.findBymedicineName(medicine.getMedicineName()).isPresent()) {
-            throw new RuntimeException("Medicine already exists: " + medicine.getMedicineName());
+        Optional<Medicine> existing = medicineRepository.findByMedicineName(medicine.getMedicineName());
+        if (existing.isPresent()) {
+            return existing.get();
         }
 
-        medicine.setStatus(ACTIVE);
+        if (medicine.getStatus() == null) {
+            medicine.setStatus(ACTIVE);
+        }
         return medicineRepository.save(medicine);
     }
 
@@ -34,25 +40,26 @@ public class MedicineServiceImplementation implements MedicineService {
 
     @Override
     public Optional<Medicine> getMedicineByName(String name) {
-        return medicineRepository.findBymedicineName(name);
+        return medicineRepository.findByMedicineName(name);
     }
 
     @Override
-    public List<Medicine> getAllMedicines() {
-        return medicineRepository.findAll();
+    public List<MedicineRecord> getAllMedicines() {
+        return medicineRepository.findAllMedicines();
     }
 
     @Override
-    public List<Medicine> getLowStockMedicines() {
+    public List<MedicineRecord> getLowStockMedicines() {
         return medicineRepository.findLowStockMedicines();
     }
 
     @Override
     public List<Medicine> searchMedicines(String keyword) {
-        return medicineRepository.findBymedicineNameContainingIgnoreCase(keyword);
+        return medicineRepository.findByMedicineNameContainingIgnoreCase(keyword);
     }
 
     @Override
+    @Transactional
     public Medicine updateMedicine(Long id, Medicine medicineDetails) {
         Medicine existing = medicineRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicine not found"));
@@ -61,7 +68,6 @@ public class MedicineServiceImplementation implements MedicineService {
         existing.setStatus(medicineDetails.getStatus());
         existing.setQuantity(medicineDetails.getQuantity());
         existing.setUnitPrice(medicineDetails.getUnitPrice());
-        existing.setFrequency(medicineDetails.getFrequency());
         existing.setCategory(medicineDetails.getCategory());
         existing.setReorderLevel(medicineDetails.getReorderLevel());
 
@@ -69,6 +75,7 @@ public class MedicineServiceImplementation implements MedicineService {
     }
 
     @Override
+    @Transactional
     public Medicine updateStock(Long id, int quantity) {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicine not found"));
@@ -82,10 +89,10 @@ public class MedicineServiceImplementation implements MedicineService {
         }
 
         return medicineRepository.save(medicine);
-
     }
 
     @Override
+    @Transactional
     public Medicine reduceStock(Long id, int quantity) {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicine not found"));
@@ -104,6 +111,7 @@ public class MedicineServiceImplementation implements MedicineService {
     }
 
     @Override
+    @Transactional
     public void deleteMedicine(Long id) {
         medicineRepository.deleteById(id);
     }
