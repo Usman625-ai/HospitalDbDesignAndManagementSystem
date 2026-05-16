@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Prescriptions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">🏥 Hospital Management System</a>
+        <a href="/" class="btn btn-outline-light">Back to Dashboard</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h2>Prescriptions</h2>
+    <div th:if="${patientName}" class="alert alert-info">Prescriptions for: <strong th:text="${patientName}"></strong></div>
+
+    <div th:if="${prescriptions.empty}" class="alert alert-warning">No prescriptions found.</div>
+
+    <table class="table table-striped mt-3" th:if="${!prescriptions.empty}">
+        <thead>
+        <tr>
+            <th>Prescription #</th>
+            <th>Patient</th>
+            <th>Doctor</th>
+            <th>Diagnosis</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${prescriptions}">
+            <td th:text="${p.prescriptionNumber}">RX001</td>
+            <td th:text="${p.patient != null ? p.patient.firstName + ' ' + p.patient.lastName : 'N/A'}">Patient</td>
+            <td th:text="${p.doctor != null ? p.doctor.name : 'N/A'}">Doctor</td>
+            <td th:text="${p.diagnosis}">Diagnosis</td>
+            <td th:text="${p.prescriptionDate}">Date</td>
+            <td th:text="${p.status}">Active</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
